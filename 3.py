@@ -88,8 +88,8 @@ print(1)
 
 
 a=soup.find_all('table', class_="searchDetailTable")[1]
-all_th=[i.get_text().strip().replace('\n','') for i in a.find_all('th')]
-all_td=[i.get_text().strip().replace('\n','') for i in a.find_all('td')]
+all_th=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in a.find_all('th')]
+all_td=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in a.find_all('td')]
 d1={}
 for i in range(len(all_th)):
   d1[all_th[i]]=all_td[i]
@@ -105,8 +105,8 @@ pass
 
 
 a=soup.find_all('table', class_="searchDetailTable")[2]
-all_th=[i.get_text().strip().replace('\n','') for i in a.find_all('th')]
-all_td=[i.get_text().strip().replace('\n','') for i in a.find_all('td')]
+all_th=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in a.find_all('th')]
+all_td=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in a.find_all('td')]
 d1={}
 for i in range(len(all_th)):
   d1[all_th[i]]=all_td[i]
@@ -121,11 +121,11 @@ pass
 
 import re#直接正则得了.
 helper=a_old[a_old.find('<div class="sDPTit2">1、试验目的</div>'):]
-helper=helper[len('<div class="sDPTit2">1、试验目的</div>')+1:helper.find('<div class="sDPTit2">2、试验设计</div>')].strip()
+helper=helper[len('<div class="sDPTit2">1、试验目的</div>')+1:helper.find('<div class="sDPTit2">2、试验设计</div>')].strip().replace('\n','').replace('\t','')
 a=soup.find_all('table', class_="searchDetailTable")[3]
 
-all_th=[i.get_text().strip().replace('\n','') for i in a.find_all('th')]
-all_td=[i.get_text().strip().replace('\n','') for i in a.find_all('td')]
+all_th=[i.get_text().strip().replace('\n','').replace('\t','') for i in a.find_all('th')]
+all_td=[i.get_text().strip().replace('\n','').replace('\t','') for i in a.find_all('td')]
 d1={}
 for i in range(len(all_th)):
   d1[all_th[i]]=all_td[i]
@@ -140,8 +140,8 @@ save['公示的试验信息']['三、临床试验信息']={'1、试验目的':he
 
 a=soup.find_all('table', class_="searchDetailTable")[4]
 
-all_th=[i.get_text().strip().replace('\n','') for i in a.find_all('th')]
-all_td=[i.get_text().strip().replace('\n','') for i in a.find_all('td')]
+all_th=[i.get_text().strip().replace('\n','').replace('\t','') for i in a.find_all('th')]
+all_td=[i.get_text().strip().replace('\n','').replace('\t','') for i in a.find_all('td')]
 d1={}
 for i in range(len(all_th)):
   d1[all_th[i]]=all_td[i]
@@ -166,12 +166,20 @@ pass
 
 #=======注意find_all函数recursive默认是打开的, 但是我们层级结构经常需要关闭他!!!!!!!!!!!!
 
-# 排除标准
-ruxuanbiaozhun=a.find_all('tr',recursive=False)[4].find('td')
+# 排除标准=====又饿时候这个网页没tbody....
+if a.find('tbody'):
+  ruxuanbiaozhun=a.find('tbody').find_all('tr',recursive=False)[4].find('td')
+else:
+  ruxuanbiaozhun=a.find_all('tr',recursive=False)[4].find('td')
 ruxuanbiaozhun=ruxuanbiaozhun.find_all('td')
 
-all_th=[i.get_text().strip().replace('\n','') for i in ruxuanbiaozhun[::2]]
-all_td=[i.get_text().strip().replace('\n','') for i in ruxuanbiaozhun[1::2]]
+
+
+
+
+
+all_th=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in ruxuanbiaozhun[::2]]
+all_td=[i.get_text().strip().strip().replace('\n','').replace('\t','') for i in ruxuanbiaozhun[1::2]]
 d2={}
 for i in range(len(all_th)):
   d2[all_th[i]]=all_td[i]
@@ -195,9 +203,23 @@ helper2={'试验药':a}
 #对照药
 
 a=soup.find_all('table', class_="searchDetailTable")[5]
-a=a.find_all('tr',recursive=False)[1]
+
+
+if a.find('tbody'):
+  a=a.find('tbody').find_all('tr',recursive=False)[1]
+else:
+    a=a.find_all('tr',recursive=False)[1]
 a=a.find_all('tr')[1:]
-a=[{'序号':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'名称':i.find_all('td')[1].get_text().strip().replace('\n','').replace('\t',''),'用法':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t','')} for i in a]
+
+tuozhan=0
+for i in range(len(a)):  #信息不够就扩充.
+   if len(a[i].find_all('td'))==1:
+       tuozhan=1
+       break
+if tuozhan:
+   a=[{'序号':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'名称':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'用法':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t','')} for i in a]
+else:
+  a=[{'序号':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'名称':i.find_all('td')[1].get_text().strip().replace('\n','').replace('\t',''),'用法':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t','')} for i in a]
 
 print(1)
 helper2['对照药']=a
@@ -215,7 +237,11 @@ pass
 
 #5. 重点指标:
 a=soup.find_all('table', class_="searchDetailTable")[6]
-a=a.find('tr',recursive=False)
+
+if a.find('tbody'):
+  a=a.find('tbody').find('tr',recursive=False)
+else:
+    a=a.find('tr',recursive=False)
 a=a.find_all('tr')[1:]
 a=[{'序号':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'指标':i.find_all('td')[1].get_text().strip().replace('\n','').replace('\t',''),'评价时间':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t',''),'终点指标选择':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t','')} for i in a]
 
@@ -225,7 +251,11 @@ helper4={'主要终点指标及评价时间':a}
 
 
 a=soup.find_all('table', class_="searchDetailTable")[6]
-a=a.find_all('tr',recursive=False)[1]
+if a.find('tbody'):
+  
+  a=a.find('tbody').find_all('tr',recursive=False)[1]
+else:
+    a=a.find_all('tr',recursive=False)[1]
 a=a.find_all('tr')[1:]
 a=[{'序号':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),'指标':i.find_all('td')[1].get_text().strip().replace('\n','').replace('\t',''),'评价时间':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t',''),'终点指标选择':i.find_all('td')[2].get_text().strip().replace('\n','').replace('\t','')} for i in a]
 
@@ -318,7 +348,7 @@ a=soup.find_all('table', class_="searchDetailTable")[9]
 
 
 aaa=a.find_all('tr')[1:]
-bbbbb=[i.find_all('td') for i in aaa]
+
 
 
 
@@ -334,3 +364,105 @@ pass
 
 
 save['公示的试验信息']['五、伦理委员会信息']=a
+
+
+
+
+# 六、试验状态信息
+
+helper=a_old[a_old.find('1、试验状态</div>'):]
+helper=helper[len('1、试验状态</div>')+1:helper.find('<div class="sDPTit2">2、试验人数')].strip()
+save['公示的试验信息']['六、试验状态信息']={}
+save['公示的试验信息']['六、试验状态信息']['1、试验状态']=helper.replace('\n','').replace('\t','')
+
+
+
+
+a=soup.find_all('table', class_="searchDetailTable")[10]
+if a.find('tbody'):
+  
+  a=a.find('tbody').find_all('tr',recursive=False)
+else:
+    a=a.find_all('tr',recursive=False)
+a=[{'目标入组人数':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t','').replace('\xa0',''),
+    '已入组人数':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t','').replace('\xa0',''),
+    '实际入组总人数':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t','').replace('\xa0',''),
+
+        
+    } for i in a][0]
+
+pass
+
+
+
+
+
+
+save['公示的试验信息']['六、试验状态信息']['2、试验人数']=a
+
+
+pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a=soup.find_all('table', class_="searchDetailTable")[11]
+if a.find('tbody'):
+  
+  a=a.find('tbody').find_all('tr',recursive=False)
+else:
+    a=a.find_all('tr',recursive=False)
+
+a=[{'第一例受试者签署知情同意书日期':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),
+    '第一例受试者入组日期':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),
+    '试验完成日期':i.find_all('td')[0].get_text().strip().replace('\n','').replace('\t',''),
+
+        
+    } for i in a][0]
+
+
+
+
+save['公示的试验信息']['六、试验状态信息']['3、受试者招募及试验完成日期']=a
+
+pass
+
+
+
+
+
+
+
+a=soup.find_all('table', class_="searchDetailTable")[12]
+if a.find('tbody'):
+  a=a.find('tbody').find_all('tr')[1:]
+else:
+    a=a.find_all('tr')[1:]
+a=[i.get_text().strip().replace('\n','').replace('\t','') for i in a]
+if len(a)==1:
+    a=a*3
+
+pass
+
+
+
+
+save['公示的试验信息']['七、临床试验结果摘要']={}
+save['公示的试验信息']['七、临床试验结果摘要']['序号']=a[0]
+save['公示的试验信息']['七、临床试验结果摘要']['版本号']=a[1]
+save['公示的试验信息']['七、临床试验结果摘要']['版本日期']=a[2]
+
+import json
+from flask import jsonify
+aaaa=json.dumps(save,ensure_ascii=False, )
+pass
